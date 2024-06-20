@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta content="width=device-width, initial-scale=1.0" name="viewport">
+    <title>Posts Fetcher</title>
+</head>
+<body>
+<h1>Posts</h1>
+<a href="/posts/create-post">
+    Create post
+</a>
+<div id="posts"></div>
+<script>
+    // URL API для получения постов (например, JSONPlaceholder API)
+    const apiUrl = 'http://127.0.0.1:8000/posts/get-posts';
+
+    // Функция для получения постов
+    async function fetchPosts() {
+        try {
+            const response = await fetch(apiUrl);
+            if (!response.ok) {
+                throw new Error(`Ошибка HTTP: ${response.status}`);
+            }
+            const posts = await response.json();
+            displayPosts(posts);
+        } catch (error) {
+            console.error('Ошибка при получении постов:', error);
+        }
+    }
+
+    // Функция для отображения постов на странице
+    function displayPosts(posts) {
+        const postsContainer = document.getElementById('posts');
+        postsContainer.innerHTML = '';
+
+        posts.forEach(post => {
+            const postElement = document.createElement('div');
+            postElement.classList.add('post');
+
+            if (post.img_path) {
+                const postImage = document.createElement('img');
+                postImage.src = post.img_path;
+                postElement.appendChild(postImage);
+            }
+
+            if (post.text) {
+                const postBody = document.createElement('p');
+                postBody.textContent = post.text;
+                postElement.appendChild(postBody);
+            }
+
+            postsContainer.appendChild(postElement);
+        });
+    }
+
+    // Вызов функции для получения и отображения постов при загрузке страницы
+    document.addEventListener('DOMContentLoaded', fetchPosts);
+</script>
+</body>
+</html>

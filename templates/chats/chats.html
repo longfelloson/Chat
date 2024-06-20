@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+{% if chats %}
+{% for chat in chats %}
+<a href="/chat/{{chat.id}}">
+    Chat: {{chat.id}}
+</a>
+{% endfor %}
+{% else %}
+Chats not found
+{% endif %}
+</body>
+</html>
