@@ -13,9 +13,9 @@ router = APIRouter(dependencies=[Depends(auth_guard)])
 
 @router.get("/messages/get-messages")
 async def get_messages_endpoint(
-        chat_id: int,
-        session: AsyncSession = Depends(get_async_session),
-        limit: Optional[int] = 10
+    chat_id: int,
+    session: AsyncSession = Depends(get_async_session),
+    limit: Optional[int] = 10
 ):
     """
     Get all messages from a chat

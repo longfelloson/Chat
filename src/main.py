@@ -43,10 +43,10 @@ async def root(request: Request, user: User = Depends(get_current_user)):
 if __name__ == '__main__':
     app.add_middleware(
         CORSMiddleware,
-        allow_origins=["*"],  # Allows all origins
         allow_credentials=True,
-        allow_methods=["*"],  # Allows all methods
-        allow_headers=["*"],  # Allows all headers
+        allow_origins=["*"],
+        allow_methods=["*"],
+        allow_headers=["*"]
     )
     app.include_router(chats_router)
     app.include_router(auth_router)
