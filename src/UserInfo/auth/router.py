@@ -1,5 +1,6 @@
-from fastapi import APIRouter, Depends, status, Request, Form
+from fastapi import APIRouter, Depends, status, Request, Form, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
+from starlette.responses import JSONResponse
 from starlette.templating import Jinja2Templates
 
 from src.UserInfo.auth.password import get_hashed_password
@@ -21,14 +22,18 @@ async def register_page_endpoint(request: Request):
 
 @router.post('/register-user')
 async def create_new_user(
-        email: str = Form(...),
-        password: str = Form(...),
-        session: AsyncSession = Depends(get_async_session)
+    email: str = Form(...),
+    password: str = Form(...),
+    session: AsyncSession = Depends(get_async_session)
 ):
     """
     Creates new user and redirects to root page
     """
-    await users_crud.create_user(email, get_hashed_password(password), session)
+    hashed_password = get_hashed_password(password)
+    if await users_crud.get_user_by_credentials(email, session, hashed_password):
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="User already exists")
+
+    await users_crud.create_user(email, hashed_password, session)
 
     return get_response_with_token(status_code=status.HTTP_303_SEE_OTHER, token_data={"email": email})
 
@@ -43,11 +48,11 @@ async def login(request: Request):
 
 @router.post('/auth')
 async def create_access_token_endpoint(
-        email: str = Form(...),
-        password: str = Form(...),
-        session: AsyncSession = Depends(get_async_session)
+    email: str = Form(...),
+    password: str = Form(...),
+    session: AsyncSession = Depends(get_async_session)
 ):
     if not await users_crud.get_user_by_credentials(email, session, hashed_password=get_hashed_password(password)):
-        return {"message": "User not found"}
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
 
     return get_response_with_token(status_code=status.HTTP_303_SEE_OTHER, token_data={"email": email})
