@@ -2,3 +2,4 @@
 .base
 .idea
 base.db
+static/img/posts/photos/*

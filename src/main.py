@@ -2,6 +2,7 @@ import uvicorn
 from fastapi import FastAPI, Request, status, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from starlette.responses import RedirectResponse
+from starlette.staticfiles import StaticFiles
 from starlette.templating import Jinja2Templates
 
 from src import database
@@ -52,5 +53,7 @@ if __name__ == '__main__':
     app.include_router(auth_router)
     app.include_router(messages_router)
     app.include_router(posts_router)
+
+    app.mount('/static', StaticFiles(directory='../static'), name='static')
 
     uvicorn.run(app)

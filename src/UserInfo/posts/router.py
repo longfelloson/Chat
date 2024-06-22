@@ -2,15 +2,15 @@ from typing import Optional
 
 from fastapi import APIRouter, UploadFile, Form, Depends, status, Request
 from sqlalchemy.ext.asyncio import AsyncSession
-from starlette.responses import JSONResponse, RedirectResponse
+from starlette.responses import JSONResponse
 from starlette.templating import Jinja2Templates
 
-from src.UserInfo.auth.utils import get_current_user
+from src.UserInfo.auth.utils import get_current_user, auth_guard
 from src.UserInfo.posts import crud
 from src.UserInfo.users.models import User
 from src.database import get_async_session
 
-router = APIRouter()
+router = APIRouter(dependencies=[Depends(auth_guard)])
 templates = Jinja2Templates(directory="../templates")
 
 
@@ -32,7 +32,7 @@ async def create_post_page_endpoint(request: Request):
 
 @router.get('/posts/get-posts')
 async def get_user_posts_endpoint(
-        session: AsyncSession = Depends(get_async_session), user: User = Depends(get_current_user)
+    session: AsyncSession = Depends(get_async_session), user: User = Depends(get_current_user)
 ):
     """
     Return all user's posts'
@@ -42,18 +42,18 @@ async def get_user_posts_endpoint(
 
 @router.post('/posts/create-post', response_class=Optional[JSONResponse])
 async def create_user_post(
-        text: str = Form(...),
-        img: UploadFile = Form(...),
-        session: AsyncSession = Depends(get_async_session),
-        user: User = Depends(get_current_user)
+    text: str = Form(...),
+    img: UploadFile = Form(...),
+    session: AsyncSession = Depends(get_async_session),
+    user: User = Depends(get_current_user)
 ):
     """
     Create new user's post in database
     """
-    img_path = f'../src/UserInfo/posts/photos/{img.filename}'
+    img_path = f"../static/img/posts/photos/{img.filename}"
     with open(img_path, "wb") as f:
         f.write(img.file.read())
 
     await crud.create_post(user.id, text, session, img_path)
 
-    return RedirectResponse(url='/posts', status_code=status.HTTP_303_SEE_OTHER)
+    return JSONResponse({"message": "Post created successfully"}, status_code=status.HTTP_201_CREATED)
